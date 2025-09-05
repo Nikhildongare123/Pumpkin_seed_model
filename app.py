@@ -9,12 +9,12 @@ st.set_page_config(page_title="Pumpkin Seed Classifier", page_icon="🎃", layou
 st.title("🎃 Pumpkin Seed Classifier")
 st.write("Upload features or enter them manually to predict the seed class with your trained model.")
 
-MODEL_PATH = Path("Pumpkin_seed_model.pkl")
+MODEL_PATH = Path("pumpkin_model.pkl")
 
 @st.cache_resource
 def load_model():
     if not MODEL_PATH.exists():
-        st.error("Model file not found: {MODEL_PATH}. Please place your 'Pumpkin_seed_model.pkl' in the same folder as this app.")
+        st.error("Model file not found: {MODEL_PATH}. Please place your 'pumpkin_model.pkl' in the same folder as this app.")
         return None
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
@@ -46,7 +46,7 @@ def predict(df: pd.DataFrame):
 with st.sidebar:
     st.header("About")
     st.markdown(
-        "This app loads **Pumpkin_seed_model.pkl** and predicts the **Class** (e.g., 0/1).\n"
+        "This app loads **pumpkin_model.pkl** and predicts the **Class** (e.g., 0/1).\n"
         "Columns expected:\n"
         f"- " + "\n- ".join(FEATURES)
     )
