@@ -14,7 +14,7 @@ MODEL_PATH = Path("pumpkin_model.pkl")
 @st.cache_resource
 def load_model():
     if not MODEL_PATH.exists():
-        st.error("Model file not found: {MODEL_PATH}. Please place your 'pumpkin_model.pkl' in the same folder as this app.")
+        st.error(f"Model file not found: {MODEL_PATH}. Please place your 'pumpkin_model.pkl' in the same folder as this app.")
         return None
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
@@ -22,7 +22,11 @@ def load_model():
 
 model = load_model()
 
-FEATURES = ["Area", "Perimeter", "Major_Axis_Length", "Minor_Axis_Length", "Convex_Area", "Equiv_Diameter", "Eccentricity", "Solidity", "Extent", "Roundness", "Aspect_Ration", "Compactness"]
+FEATURES = [
+    "Area", "Perimeter", "Major_Axis_Length", "Minor_Axis_Length",
+    "Convex_Area", "Equiv_Diameter", "Eccentricity", "Solidity",
+    "Extent", "Roundness", "Aspect_Ration", "Compactness"
+]
 
 def predict(df: pd.DataFrame):
     # Keep only the expected features in the right order
@@ -46,7 +50,10 @@ def predict(df: pd.DataFrame):
 with st.sidebar:
     st.header("About")
     st.markdown(
-        "This app loads **pumpkin_model.pkl** and predicts the **Class** (e.g., 0/1).\n"
+        "This app loads **pumpkin_model.pkl** and predicts the **Class**.\n"
+        "Classes:\n"
+        "- 0 → Ürgüp Sivrisi\n"
+        "- 1 → Çerçevelik\n\n"
         "Columns expected:\n"
         f"- " + "\n- ".join(FEATURES)
     )
@@ -77,8 +84,9 @@ with tab1:
                 preds, proba = predict(df)
                 out = df.copy()
                 out["Predicted_Class"] = preds
+                out["Predicted_Name"] = ["Çerçevelik" if p == 1 else "Ürgüp Sivrisi" for p in preds]  # 🔹 Name column
                 if proba is not None and proba.ndim == 2 and proba.shape[1] >= 2:
-                    out["Probability_Class_1"] = proba[:, 1]
+                    out["Probability_Class_1 (Çerçevelik)"] = proba[:, 1]
                 st.success("Predictions complete.")
                 st.dataframe(out.head(50))
                 st.download_button("Download predictions CSV", out.to_csv(index=False).encode("utf-8"), "predictions.csv", "text/csv")
@@ -104,11 +112,12 @@ with tab2:
         row = pd.DataFrame([values], columns=FEATURES)
         try:
             preds, proba = predict(row)
-            st.success(f"Predicted Class: {int(preds[0])}")
+            class_name = "Çerçevelik" if int(preds[0]) == 1 else "Ürgüp Sivrisi"  # 🔹 Mapping
+            st.success(f"Predicted Class: {class_name}")
             if proba is not None and proba.ndim == 2 and proba.shape[1] >= 2:
-                st.write(f"Probability of Class 1: {float(proba[0,1]):.4f}")
+                st.write(f"Probability of Class 1 (Çerçevelik): {float(proba[0,1]):.4f}")
         except Exception as e:
             st.exception(e)
 
 st.markdown("---")
-st.caption("Built with Streamlit. Place your **Pumpkin_seed_model.pkl** next to this script and run: `streamlit run app.py`.")
+st.caption("Built with Streamlit. Place your **pumpkin_model.pkl** next to this script and run: `streamlit run app.py`.")
